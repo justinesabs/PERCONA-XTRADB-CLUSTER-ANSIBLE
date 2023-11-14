@@ -1,0 +1,30 @@
+---
+- name: Deploy Percona Master Node
+  hosts: percona_servers
+  become: true
+
+  tasks:
+    - name: Create Docker Network
+      docker_network:
+        name: terra_network
+
+    - name: Pull Percona Custom Image
+      docker_image:
+        name: zhy7ne/pxc_node0:3.0
+        source: pull
+
+    - name: Run Percona Container
+      docker_container:
+        name: pxc_node0
+        image: zhy7ne/pxc_node0:3.0
+        state: started
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          MYSQL_ROOT_PASSWORD: "password"
+          MYSQL_INITDB_SKIP_TZINFO: "yes"
+          XTRABACKUP_PASSWORD: "password"
+          PXC_ENCRYPT_CLUSTER_TRAFFIC: "0"
+        ports:
+          - "33060:3306"
+        networks:
+          - name: terra_network
